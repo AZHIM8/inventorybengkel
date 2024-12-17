@@ -25,22 +25,24 @@ class LaporanBarangMasukController extends Controller
     {
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
-    
-        $barangMasuk = BarangMasuk::query();
-    
+
+        $barangMasuk = BarangMasuk::with('detailBarangMasuks.barang', 'supplier');
+
         if ($tanggalMulai && $tanggalSelesai) {
-            $barangMasuk->whereBetween('tanggal_masuk', [$tanggalMulai, $tanggalSelesai]);
+            $barangMasuk->whereBetween('tgl_masuk', [$tanggalMulai, $tanggalSelesai]);
         }
-    
+
         $data = $barangMasuk->get();
 
         if (empty($tanggalMulai) && empty($tanggalSelesai)) {
-            $data = BarangMasuk::all();
+            $data = BarangMasuk::with('detailBarangMasuks.barang', 'supplier')
+                ->orderBy('id', 'DESC')
+                ->get();
         }
-    
+
         return response()->json($data);
     }
-    
+
     /**
      * Print DomPDF
      */
@@ -48,19 +50,19 @@ class LaporanBarangMasukController extends Controller
     {
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
-    
-        $barangMasuk = BarangMasuk::query();
-    
+
+        $barangMasuk = BarangMasuk::with('detailBarangMasuks.barang', 'supplier');
+
         if ($tanggalMulai && $tanggalSelesai) {
-            $barangMasuk->whereBetween('tanggal_masuk', [$tanggalMulai, $tanggalSelesai]);
+            $barangMasuk->whereBetween('tgl_masuk', [$tanggalMulai, $tanggalSelesai]);
         }
-    
+
         if ($tanggalMulai !== null && $tanggalSelesai !== null) {
             $data = $barangMasuk->get();
         } else {
-            $data = BarangMasuk::all();
+            $data = BarangMasuk::with('detailBarangMasuks.barang', 'supplier')->get();
         }
-        
+
         //Generate PDF
         $dompdf = new Dompdf();
         $html = view('/laporan-barang-masuk/print-barang-masuk', compact('data', 'tanggalMulai', 'tanggalSelesai'))->render();
@@ -69,7 +71,7 @@ class LaporanBarangMasukController extends Controller
         $dompdf->render();
         $dompdf->stream('print-barang-masuk.pdf', ['Attachment' => false]);
     }
-    
+
     /**
      * Get Supplier
      */
@@ -79,7 +81,7 @@ class LaporanBarangMasukController extends Controller
         return response()->json($supplier);
     }
 
-    
+
     /**
      * Show the form for creating a new resource.
      */

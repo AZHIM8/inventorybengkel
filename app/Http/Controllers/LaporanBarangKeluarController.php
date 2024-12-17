@@ -25,19 +25,22 @@ class LaporanBarangKeluarController extends Controller
     {
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
-    
-        $barangKeluar = BarangKeluar::query();
-    
+
+        $barangKeluar = BarangKeluar::with('detailBarangKeluars.barang', 'customer');
+
         if ($tanggalMulai && $tanggalSelesai) {
-            $barangKeluar->whereBetween('tanggal_keluar', [$tanggalMulai, $tanggalSelesai]);
+            $barangKeluar->whereBetween('tgl_keluar', [$tanggalMulai, $tanggalSelesai]);
         }
-    
+
         $data = $barangKeluar->get();
 
         if (empty($tanggalMulai) && empty($tanggalSelesai)) {
-            $data = BarangKeluar::all();
+            $data =
+                BarangKeluar::with('detailBarangKeluars.barang', 'customer')
+                ->orderBy('id', 'DESC')
+                ->get();
         }
-    
+
         return response()->json($data);
     }
 
@@ -48,19 +51,23 @@ class LaporanBarangKeluarController extends Controller
     {
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
-    
-        $barangKeluar = BarangKeluar::query();
-    
+
+        $barangKeluar =
+            BarangKeluar::with('detailBarangKeluars.barang', 'customer');;
+
         if ($tanggalMulai && $tanggalSelesai) {
-            $barangKeluar->whereBetween('tanggal_keluar', [$tanggalMulai, $tanggalSelesai]);
+            $barangKeluar->whereBetween('tgl_keluar', [$tanggalMulai, $tanggalSelesai]);
         }
-    
+
         if ($tanggalMulai !== null && $tanggalSelesai !== null) {
             $data = $barangKeluar->get();
         } else {
-            $data = BarangKeluar::all();
+            $data =
+                BarangKeluar::with('detailBarangKeluars.barang', 'customer')
+                ->orderBy('id', 'DESC')
+                ->get();
         }
-        
+
         //Generate PDF
         $dompdf = new Dompdf();
         $html = view('/laporan-barang-keluar/print-barang-keluar', compact('data', 'tanggalMulai', 'tanggalSelesai'))->render();

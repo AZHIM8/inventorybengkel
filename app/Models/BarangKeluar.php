@@ -12,14 +12,13 @@ class BarangKeluar extends Model
     use HasFactory;
     use LogsActivity;
 
-    protected $fillable = ['kode_transaksi', 'tanggal_keluar', 'nama_barang', 'jumlah_keluar', 'customer_id', 'user_id'];
-    protected $guarded = [''];
+    protected $guarded = ['id'];
     protected $ignoreChangedAttributes = ['updated_at'];
 
     public function getActivitylogAttributes(): array
     {
         return array_diff($this->fillable, $this->ignoreChangedAttributes);
-    }    
+    }
 
     // Activity Log
     public function getActivitylogOptions(): LogOptions
@@ -33,5 +32,10 @@ class BarangKeluar extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function detailBarangKeluars()
+    {
+        return $this->hasMany(DetailBarangKeluar::class);
     }
 }

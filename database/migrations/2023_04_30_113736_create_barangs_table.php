@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('user_id');
             $table->foreignId('jenis_id');
             $table->foreignId('satuan_id');
+            $table->foreignId('rak_id');
         });
     }
 

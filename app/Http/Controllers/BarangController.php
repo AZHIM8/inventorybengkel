@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Rak;
 use App\Models\Jenis;
 use App\Models\Barang;
+use App\Models\Satuan;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Satuan;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -22,16 +23,17 @@ class BarangController extends Controller
     public function index()
     {
         return view('barang.index', [
-            'barangs'         => Barang::all(),
+            'barangs'         => Barang::with('rak')->orderBy('id', 'DESC')->get(),
             'jenis_barangs'   => Jenis::all(),
-            'satuans'         => Satuan::all()
+            'satuans'         => Satuan::all(),
+            'raks'            => Rak::all()
         ]);
     }
 
     public function getDataBarang()
     {
-        $barangs = Barang::all();
-        
+        $barangs = Barang::with('rak')->orderBy('id', 'DESC')->get();
+
         return response()->json([
             'success'   => true,
             'data'      => $barangs
@@ -58,7 +60,8 @@ class BarangController extends Controller
             'gambar'        => 'required|mimes:jpeg,png,jpg',
             'stok_minimum'  => 'required|numeric',
             'jenis_id'      => 'required',
-            'satuan_id'     => 'required'
+            'satuan_id'     => 'required',
+            'rak_id'        => 'required',
         ], [
             'nama_barang.required'  => 'Form Nama Barang Wajib Di Isi !',
             'deskripsi.required'    => 'Form Deskripsi Wajib Di Isi !',
@@ -67,27 +70,38 @@ class BarangController extends Controller
             'stok_minimum.required' => 'Form Stok Minimum Wajib Di Isi !',
             'stok_minimum.numeric'  => 'Gunakan Angka Untuk Mengisi Form Ini !',
             'jenis_id.required'     => 'Pilih Jenis Barang !',
-            'satuan_id.required'    => 'Pilih Jenis Barang !'
+            'satuan_id.required'    => 'Pilih Jenis Barang !',
+            'rak_id.required'       => 'Pilih Lokasi Rak !',
         ]);
 
-        if ($request->hasFile('gambar')) 
-        {
+        if ($request->hasFile('gambar')) {
             $path       = 'gambar-barang/';
             $file       = $request->file('gambar');
             $fileName   = $file->getClientOriginalName();
             $gambar     = $file->storeAs($path, $fileName, 'public');
-        } else{
+        } else {
             $gambar = null;
         }
-          
-        $kode_barang = 'BRG-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+
+        // Mendapatkan kode barang terakhir
+        $lastBarang = Barang::orderBy('id', 'desc')->first();
+        if ($lastBarang) {
+            $lastKodeBarang = $lastBarang->kode_barang;
+            $lastNumber = intval(substr($lastKodeBarang, 4)); // Mengambil bagian angka dari kode barang terakhir
+            $newNumber = $lastNumber + 1; // Increment angka
+            $kode_barang = 'BRG-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT); // Membentuk kode barang baru
+        } else {
+            // Jika belum ada barang, mulai dari 1
+            $kode_barang = 'BRG-00001';
+        }
+
         $request->merge([
             'kode_barang'   => $kode_barang,
             'gambar'        => $gambar,
             'user_id'       => auth()->user()->id,
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
@@ -97,9 +111,10 @@ class BarangController extends Controller
             'user_id'     => $request->user_id,
             'kode_barang' => $request->kode_barang,
             'gambar'      => $path . $fileName,
-            'stok_minimum'=> $request->stok_minimum,
+            'stok_minimum' => $request->stok_minimum,
             'jenis_id'    => $request->jenis_id,
-            'satuan_id'   => $request->satuan_id
+            'satuan_id'   => $request->satuan_id,
+            'rak_id'      => $request->rak_id,
         ]);
 
         return response()->json([
@@ -144,7 +159,8 @@ class BarangController extends Controller
             'gambar'        => 'nullable|mimes:jpeg,png,jpg',
             'stok_minimum'  => 'required|numeric',
             'jenis_id'      => 'required',
-            'satuan_id'      => 'required'
+            'satuan_id'     => 'required',
+            'rak_id'        => 'required',
         ], [
             'nama_barang.required'  => 'Form Nama Barang Wajib Di Isi !',
             'deskripsi.required'    => 'Form Deskripsi Wajib Di Isi !',
@@ -152,20 +168,21 @@ class BarangController extends Controller
             'stok_minimum.required' => 'Form Stok Minimum Wajib Di Isi !',
             'stok_minimum.numeric'  => 'Gunakan Angka Untuk Mengisi Form Ini !',
             'jenis_id.required'     => 'Pilih Jenis Barang !',
-            'satuan_id.required'    => 'Pilih Satuan Barang !'
+            'satuan_id.required'    => 'Pilih Satuan Barang !',
+            'rak_id.required'       => 'Pilih Lokasi Rak !',
         ]);
-    
+
         // cek apakah gambar diubah atau tidak
-        if($request->hasFile('gambar')){
+        if ($request->hasFile('gambar')) {
             // hapus gambar lama
-            if($barang->gambar) {
-                unlink('.'.Storage::url($barang->gambar));
+            if ($barang->gambar) {
+                unlink('.' . Storage::url($barang->gambar));
             }
             $path       = 'gambar-barang/';
             $file       = $request->file('gambar');
             $fileName   = $file->getClientOriginalName();
             $gambar     = $file->storeAs($path, $fileName, 'public');
-            $path      .= $fileName; 
+            $path      .= $fileName;
         } else {
             // jika tidak ada file gambar, gunakan gambar lama
             $validator = Validator::make($request->all(), [
@@ -184,37 +201,38 @@ class BarangController extends Controller
             ]);
 
             $path = $barang->gambar;
-        } 
-        
-        if($validator->fails()){
+        }
+
+        if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-    
+
         $barang->update([
             'nama_barang'   => $request->nama_barang,
-            'stok_minimum'  => $request->stok_minimum, 
+            'stok_minimum'  => $request->stok_minimum,
             'deskripsi'     => $request->deskripsi,
             'user_id'       => auth()->user()->id,
             'gambar'        => $path,
             'jenis_id'      => $request->jenis_id,
-            'satuan_id'     => $request->satuan_id
+            'satuan_id'     => $request->satuan_id,
+            'rak_id'        => $request->rak_id,
         ]);
-    
+
         return response()->json([
             'success'   => true,
             'message'   => 'Data Berhasil Terupdate',
             'data'      => $barang
         ]);
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Barang $barang)
     {
-        unlink('.'.Storage::url($barang->gambar));
-    
+        unlink('.' . Storage::url($barang->gambar));
+
         Barang::destroy($barang->id);
 
         return response()->json([

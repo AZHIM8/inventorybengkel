@@ -25,22 +25,22 @@ class LaporanStokController extends Controller
     {
         $selectedOption = $request->input('opsi');
 
-        if($selectedOption == 'semua'){
-             $barangs = Barang::all();
-        } elseif ($selectedOption == 'minimum'){
-             $barangs = Barang::where('stok', '<=', 10)->get();
-        } elseif ($selectedOption == 'stok-habis'){
-             $barangs = Barang::where('stok', 0)->get();
+        if ($selectedOption == 'semua') {
+            $barangs = Barang::all();
+        } elseif ($selectedOption == 'minimum') {
+            $barangs = Barang::where('stok', '<=', 10)->get();
+        } elseif ($selectedOption == 'stok-habis') {
+            $barangs = Barang::where('stok', 0)->get();
         } else {
-             $barangs = Barang::all();
+            $barangs = Barang::all();
         }
- 
+
         return response()->json($barangs);
     }
 
     /**
      * Print Data 
-    */
+     */
     public function printStok(Request $request)
     {
         $selectedOption = $request->input('opsi');

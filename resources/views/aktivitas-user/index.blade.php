@@ -51,7 +51,7 @@
                                 <td>{{ $log->description }}</td>
                                 <td>{{ $log->created_at->format('d-m-Y H:i:s') }}</td>
                             </tr>
-                            @endforeach                        
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

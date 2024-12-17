@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::create('barang_masuks', function (Blueprint $table) {
             $table->id();
             $table->string('kode_transaksi')->unique();
-            $table->date('tanggal_masuk');
-            $table->string('nama_barang');
-            $table->integer('jumlah_masuk');
+            $table->date('tgl_masuk');
             $table->foreignId('supplier_id');
             $table->foreignId('user_id');
             $table->timestamps();

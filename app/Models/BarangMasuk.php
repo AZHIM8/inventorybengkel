@@ -12,14 +12,13 @@ class BarangMasuk extends Model
     use HasFactory;
     use LogsActivity;
 
-    protected $fillable = ['kode_transaksi', 'tanggal_masuk', 'nama_barang', 'jumlah_masuk', 'supplier_id', 'user_id'];
-    protected $guarded = [''];
+    protected $guarded = ['id'];
     protected $ignoreChangedAttributes = ['updated_at'];
 
     public function getActivitylogAttributes(): array
     {
         return array_diff($this->fillable, $this->ignoreChangedAttributes);
-    }    
+    }
 
     // Activity Log
     public function getActivitylogOptions(): LogOptions
@@ -35,4 +34,8 @@ class BarangMasuk extends Model
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
+    public function detailBarangMasuks()
+    {
+        return $this->hasMany(DetailBarangMasuk::class);
+    }
 }

@@ -25,6 +25,7 @@
                                     <th>Gambar</th>
                                     <th>Kode Barang</th>
                                     <th>Nama Barang</th>
+                                    <th>Lokasi Rak</th>
                                     <th>Stok</th>
                                     <th>Opsi</th>
                                 </tr>
@@ -55,19 +56,20 @@
                     $.each(response.data, function(key, value) {
                         let stok = value.stok != null ? value.stok : "Stok Kosong";
                         let barang = `
-                <tr class="barang-row" id="index_${value.id}">
-                    <td>${counter++}</td>
-                    <td><img src="/storage/${value.gambar}" alt="gambar Barang" style="width: 150px"; height="150px"></td>
-                    <td>${value.kode_barang}</td>
-                    <td>${value.nama_barang}</td>
-                    <td>${stok}</td>
-                    <td>
-                        <a href="javascript:void(0)" id="button_detail_barang" data-id="${value.id}" class="btn btn-icon btn-success btn-lg mb-2"><i class="far fa-eye"></i> </a>
-                        <a href="javascript:void(0)" id="button_edit_barang" data-id="${value.id}" class="btn btn-icon btn-warning btn-lg mb-2"><i class="far fa-edit"></i> </a>
-                        <a href="javascript:void(0)" id="button_hapus_barang" data-id="${value.id}" class="btn btn-icon btn-danger btn-lg mb-2"><i class="fas fa-trash"></i> </a>
-                    </td>
-                </tr>
-            `;
+                            <tr class="barang-row" id="index_${value.id}">
+                                <td>${counter++}</td>
+                                <td><img src="/storage/${value.gambar}" alt="gambar Barang" style="width: 150px"; height="150px"></td>
+                                <td>${value.kode_barang}</td>
+                                <td>${value.nama_barang}</td>
+                                <td>${value.rak.nm_rak}</td>
+                                <td>${stok}</td>
+                                <td>
+                                    <a href="javascript:void(0)" id="button_detail_barang" data-id="${value.id}" class="btn btn-icon btn-success btn-lg mb-2"><i class="far fa-eye"></i> </a>
+                                    <a href="javascript:void(0)" id="button_edit_barang" data-id="${value.id}" class="btn btn-icon btn-warning btn-lg mb-2"><i class="far fa-edit"></i> </a>
+                                    <a href="javascript:void(0)" id="button_hapus_barang" data-id="${value.id}" class="btn btn-icon btn-danger btn-lg mb-2"><i class="fas fa-trash"></i> </a>
+                                </td>
+                            </tr>
+                        `;
                         $('#table_id').DataTable().row.add($(barang)).draw(false);
                     });
                 }
@@ -89,6 +91,7 @@
             let stok_minimum = $('#stok_minimum').val();
             let jenis_id = $('#jenis_id').val();
             let satuan_id = $('#satuan_id').val();
+            let rak_id = $('#rak_id').val();
             let deskripsi = $('#deskripsi').val();
             let token = $("meta[name='csrf-token']").attr("content");
 
@@ -98,6 +101,7 @@
             formData.append('stok_minimum', stok_minimum);
             formData.append('jenis_id', jenis_id);
             formData.append('satuan_id', satuan_id);
+            formData.append('rak_id', rak_id);
             formData.append('deskripsi', deskripsi);
             formData.append('_token', token);
 
@@ -136,6 +140,7 @@
                                 <td><img src="/storage/${value.gambar}" alt="gambar Barang" style="width: 150px"; height="150px"></td>
                                 <td>${value.kode_barang}</td>
                                 <td>${value.nama_barang}</td>
+                                <td>${value.rak.nm_rak}</td>
                                 <td>${stok}</td>
                                 <td>
                                     <a href="javascript:void(0)" id="button_detail_barang" data-id="${value.id}" class="btn btn-icon btn-success btn-lg mb-2"><i class="far fa-eye"></i> </a>
@@ -207,6 +212,14 @@
                         $('#alert-satuan_id').html(error.responseJSON.satuan_id[0]);
                     }
 
+                    if (error.responseJSON && error.responseJSON.rak_id && error.responseJSON
+                        .rak_id[0]) {
+                        $('#alert-rak_id').removeClass('d-none');
+                        $('#alert-rak_id').addClass('d-block');
+
+                        $('#alert-rak_id').html(error.responseJSON.rak_id[0]);
+                    }
+
                     if (error.responseJSON && error.responseJSON.deskripsi && error.responseJSON
                         .deskripsi[0]) {
                         $('#alert-deskripsi').removeClass('d-none');
@@ -234,6 +247,7 @@
                     $('#detail_nama_barang').val(response.data.nama_barang);
                     $('#detail_jenis_id').val(response.data.jenis_id);
                     $('#detail_satuan_id').val(response.data.satuan_id);
+                    $('#detail_rak_id').val(response.data.rak_id);
                     $('#detail_stok').val(response.data.stok !== null && response.data.stok !== '' ?
                         response.data.stok : 'Stok Kosong');
                     $('#detail_stok_minimum').val(response.data.stok_minimum);
@@ -263,6 +277,7 @@
                     $('#edit_stok_minimum').val(response.data.stok_minimum);
                     $('#edit_jenis_id').val(response.data.jenis_id);
                     $('#edit_satuan_id').val(response.data.satuan_id);
+                    $('#edit_rak_id').val(response.data.rak_id);
                     $('#edit_deskripsi').val(response.data.deskripsi);
                     $('#edit_gambar_preview').attr('src', '/storage/' + response.data.gambar);
 
@@ -282,6 +297,7 @@
             let deskripsi = $('#edit_deskripsi').val();
             let jenis_id = $('#edit_jenis_id').val();
             let satuan_id = $('#edit_satuan_id').val();
+            let rak_id = $('#edit_rak_id').val();
             let token = $("meta[name='csrf-token']").attr("content");
 
 
@@ -293,6 +309,7 @@
             formData.append('deskripsi', deskripsi);
             formData.append('jenis_id', jenis_id);
             formData.append('satuan_id', satuan_id);
+            formData.append('rak_id', rak_id);
             formData.append('_token', token);
             formData.append('_method', 'PUT');
 
@@ -313,27 +330,52 @@
                         timer: 3000
                     });
 
-                    let row = $(`#index_${response.data.id}`);
-                    let rowData = row.find('td');
+                    $.ajax({
+                        url: '/barang/get-data',
+                        type: "GET",
+                        cache: false,
+                        success: function(response) {
+                            $('#table-barangs').html(''); // kosongkan tabel terlebih dahulu
 
-                    // Memperbarui data pada kolom nomor urutan (indeks 0)
-                    rowData.eq(0).text(row.index() + 1);
+                            let counter = 1;
+                            $('#table_id').DataTable().clear();
+                            $.each(response.data, function(key, value) {
+                                let stok = value.stok != null ? value.stok :
+                                    "Stok Kosong";
+                                let barang = `
+                                <tr class="barang-row" id="index_${value.id}">
+                                    <td>${counter++}</td>
+                                    <td><img src="/storage/${value.gambar}" alt="gambar Barang" style="width: 150px"; height="150px"></td>
+                                    <td>${value.kode_barang}</td>
+                                    <td>${value.nama_barang}</td>
+                                    <td>${value.rak.nm_rak}</td>
+                                    <td>${stok}</td>
+                                    <td>
+                                        <a href="javascript:void(0)" id="button_detail_barang" data-id="${value.id}" class="btn btn-icon btn-success btn-lg mb-2"><i class="far fa-eye"></i> </a>
+                                        <a href="javascript:void(0)" id="button_edit_barang" data-id="${value.id}" class="btn btn-icon btn-warning btn-lg mb-2"><i class="far fa-edit"></i> </a>
+                                        <a href="javascript:void(0)" id="button_hapus_barang" data-id="${value.id}" class="btn btn-icon btn-danger btn-lg mb-2"><i class="fas fa-trash"></i> </a>
+                                    </td>
+                                </tr>
+                            `;
+                                $('#table_id').DataTable().row.add($(barang)).draw(
+                                    false);
+                            });
 
-                    // Memperbarui data pada kolom gambar (indeks 1)
-                    let imageColumn = rowData.eq(1).find('img');
-                    imageColumn.attr('src', `/storage/${response.data.gambar}`);
+                            $('#gambar').val('');
+                            $('#preview').attr('src', '');
+                            $('#nama_barang').val('');
+                            $('#stok_minimum').val('');
+                            $('#deskripsi').val('');
 
-                    // Memperbarui data pada kolom kode barang (indeks 2)
-                    rowData.eq(2).text(response.data.kode_barang);
+                            $('#modal_edit_barang').modal('hide');
 
-                    // Memperbarui data pada kolom nama barang (indeks 3)
-                    rowData.eq(3).text(response.data.nama_barang);
-
-                    // Memperbarui data pada kolom stok (indeks 4)
-                    let stok = response.data.stok != null ? response.data.stok : "Stok Kosong";
-                    rowData.eq(4).text(stok);
-
-                    $('#modal_edit_barang').modal('hide');
+                            let table = $('#table_id').DataTable();
+                            table.draw();
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    });
                 },
 
                 error: function(error) {
@@ -375,6 +417,14 @@
                         $('#alert-satuan_id').addClass('d-block');
 
                         $('#alert-satuan_id').html(error.responseJSON.satuan_id[0]);
+                    }
+
+                    if (error.responseJSON && error.responseJSON.rak_id && error.responseJSON
+                        .rak_id[0]) {
+                        $('#alert-rak_id').removeClass('d-none');
+                        $('#alert-rak_id').addClass('d-block');
+
+                        $('#alert-rak_id').html(error.responseJSON.rak_id[0]);
                     }
 
                     if (error.responseJSON && error.responseJSON.deskripsi && error.responseJSON
@@ -439,6 +489,7 @@
                                             <td><img src="/storage/${value.gambar}" alt="gambar Barang" style="width: 150px"; height="150px"></td>
                                             <td>${value.kode_barang}</td>
                                             <td>${value.nama_barang}</td>
+                                            <td>${value.rak.nm_rak}</td>
                                             <td>${stok}</td>
                                             <td>
                                                 <a href="javascript:void(0)" id="button_detail_barang" data-id="${value.id}" class="btn btn-icon btn-success btn-lg mb-2"><i class="far fa-eye"></i> </a>

@@ -9,6 +9,8 @@ use App\Models\Jenis;
 use App\Models\Barang;
 use App\Models\Satuan;
 use App\Models\Customer;
+use App\Models\KodeRak;
+use App\Models\Rak;
 use App\Models\Supplier;
 use Illuminate\Database\Seeder;
 
@@ -34,15 +36,15 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'name'      => 'Kepala Gudang',
-            'email'     => 'kepalagudang@gmail.com',
+            'name'      => 'Manajer',
+            'email'     => 'manajer@gmail.com',
             'password'  => bcrypt('1234'),
             'role_id'   => 2
         ]);
 
         User::create([
-            'name'      => 'Admin Gudang',
-            'email'     => 'admin@gmail.com',
+            'name'      => 'Operator',
+            'email'     => 'operator@gmail.com',
             'password'  => bcrypt('1234'),
             'role_id'   => 3
         ]);
@@ -63,6 +65,11 @@ class DatabaseSeeder extends Seeder
         Satuan::create([
             'satuan'        => 'Liter',
             'user_id'       => 1
+        ]);
+
+        Rak::create([
+            'kd_rak'        => '012-001',
+            'nm_rak'        => 'rak 1'
         ]);
 
         Supplier::create([
@@ -86,21 +93,20 @@ class DatabaseSeeder extends Seeder
             'alamat'        => 'Baledono, Jawa Tengah',
             'user_id'       => 1
         ]);
-        
+
         Role::create([
             'role'      => 'superadmin',
             'deskripsi' => 'Superadmin memiliki kendali penuh pada aplikasi termasuk manajemen User'
         ]);
 
         Role::create([
-            'role'      => 'kepala gudang',
-            'deskripsi' => 'Kepala gudang memilki akses untuk mengelola dan mencetak laporan stok, barang masuk, dan barang keluar'
+            'role'      => 'manajer',
+            'deskripsi' => 'manajer memilki akses untuk mengelola dan mencetak laporan stok, barang masuk, dan barang keluar'
         ]);
 
         Role::create([
-            'role'      => 'admin gudang',
-            'deskripsi' => 'Admin gudang memilki akses untuk mengelola stok,  barang masuk, barang keluar dan laporannya'
+            'role'      => 'operator',
+            'deskripsi' => 'operator memilki akses untuk mengelola stok,  barang masuk, barang keluar dan laporannya'
         ]);
-     
     }
 }
