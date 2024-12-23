@@ -1,46 +1,36 @@
-FROM php:8.2-fpm
+# Use PHP base image
+FROM php:8.2.12-fpm
 
-# Install dependencies
+# Install necessary dependencies
 RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    zip \
-    unzip \
     git \
     curl \
-&& docker-php-ext-configure gd --with-freetype --with-jpeg \
-&& docker-php-ext-install gd zip pdo pdo_mysql exif \
-&& docker-php-ext-enable exif
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nginx \
+    supervisor \
+    maven \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions required for Laravel
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy application files
+# Copy all project files into the container
 COPY . .
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --installdir=/usr/local/bin --filename=composer
+# Set file permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www
 
-# Install PHP dependencies
-RUN composer install
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y nodejs
-
-# Install Node.js dependencies
-RUN npm install
-
-# Build assets
-RUN npm run build # Atau gunakan npm run dev jika tidak ingin build
-
-# Expose port
+# Expose necessary ports
 EXPOSE 80 9000
 
-# Start PHP-FPM
+# Default command to start PHP-FPM and Nginx
 CMD ["php-fpm"]
